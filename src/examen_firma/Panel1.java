@@ -21,6 +21,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.*;
@@ -30,12 +33,12 @@ import javax.crypto.NoSuchPaddingException;
 import javax.swing.border.Border;
 
 public class Panel1 extends JPanel {
-    JButton a, Crear, Limpiar, CLlaves, SLlavePriv;
+    JButton a, Crear, Limpiar, CrearLlaves, SelecLlavePriv, Firmar, SelecFileToComp, Comprob;
     JComboBox options;
-    JLabel titulo, Nombrel, Edadl, Mensajel;
-    JTextField Nombre, Edad, Firma;
+    JLabel titulo, Nombrel, Edadl, Mensajel, KeyPrivl, FileCompl;
+    JTextField Nombre, Edad, Firma, NameKeyPriv, NameFileComp;
     JTextArea Mensaje;
-    File llavePriv;
+    File llavePriv, FileToComp;
     /*
     JButton DEScifrar, DESdescifrar, AEScifrar, AESdescifrar;
     JRadioButton DESoption, DESoption2;
@@ -70,10 +73,16 @@ public class Panel1 extends JPanel {
 
                 if (options.getSelectedItem().equals("Formulario & Firma")) {
                     Formulario0();
+                    Firma1();
+                    Comprobar1();
                 } else if (options.getSelectedItem().equals("Comprobación")) {
                     Formulario1();
+                    Firma1();
+                    Comprobar0();
                 } else if (options.getSelectedItem().equals("Seleccionar...")) {
                     Formulario0();
+                    Firma1();
+                    Comprobar1();
                 } else {
                     System.out.println("Error");
                 }
@@ -81,6 +90,8 @@ public class Panel1 extends JPanel {
         });
         add(options);
         Formulario();
+        Firma();
+        Comprobar();
     }
     
     public void Formulario(){
@@ -140,14 +151,20 @@ public class Panel1 extends JPanel {
                 if (nombre.isEmpty() || edad.isEmpty() || mensaje.isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Por favor, rellene los campos");
                 } else {
+                    Firma0();
+                    Formulario1();
+                    Comprobar1();
                     try {
                         crear.generar(nombre, edad, mensaje);
                     } catch (FileNotFoundException ex) {
                         Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (DocumentException ex) {
                         Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
+                
                     
             }
         });
@@ -198,18 +215,184 @@ public class Panel1 extends JPanel {
     
     public void Firma(){
         
+        CrearLlaves = new JButton("Crear Llaves");
+        CrearLlaves.setBackground(Color.decode("#161569"));
+        //CrearLlaves.setBounds(300, 130, 200, 50);
+        CrearLlaves.setFont(new Font("Arial", Font.CENTER_BASELINE, 20));
+        CrearLlaves.setForeground(Color.decode("#D3E7F3"));
+        CrearLlaves.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                    PDF pdf = new PDF();
+                try {
+                    pdf.generarKeys();
+                    JOptionPane.showMessageDialog(null, "Llaves creadas exitosamente");
+                } catch (IOException ex) {
+                    Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (NoSuchAlgorithmException ex) {
+                    Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (NoSuchProviderException ex) {
+                    Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        add(CrearLlaves);
+
+        /*SelecLlavePriv = new JButton("Seleccionar Llave Privada");
+        SelecLlavePriv.setBackground(Color.decode("#161569"));
+        //SelecLlavePriv.setBounds(260, 200, 280, 50);
+        SelecLlavePriv.setFont(new Font("Arial", Font.CENTER_BASELINE, 20));
+        SelecLlavePriv.setForeground(Color.decode("#D3E7F3"));
+        SelecLlavePriv.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setLlavePriv();
+            }
+        });
+        add(SelecLlavePriv);*/
+        
+        KeyPrivl = new JLabel("Nombre Llave Privada:");
+        //KeyPrivl.setBounds(88, 210, 180, 15);
+        KeyPrivl.setFont(new Font("Arial", Font.CENTER_BASELINE, 15));
+        KeyPrivl.setForeground(Color.decode("#ffffff"));
+        add(KeyPrivl);
+        
+        NameKeyPriv = new JTextField();
+        //NameKeyPriv.setBounds(260, 200, 250, 30);
+        NameKeyPriv.setFont(new Font("Arial", Font.ITALIC, 15));
+        NameKeyPriv.setBackground(Color.decode("#C5CAC9"));
+        add(NameKeyPriv);
+        
+        Firmar = new JButton("Firmar");
+        Firmar.setBackground(Color.decode("#161569"));
+        //Firmar.setBounds(640, 415, 140, 50);
+        Firmar.setFont(new Font("Arial", Font.CENTER_BASELINE, 20));
+        Firmar.setForeground(Color.decode("#D3E7F3"));
+        Firmar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String NameKP = NameKeyPriv.getText();
+                if (NameKP.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Error, Escribe el nombre de la llave");
+                } else {
+                    PDF pdf = new PDF();
+                    try {
+                        pdf.firmardocumento(NameKP);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchAlgorithmException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvalidKeySpecException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchProviderException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvalidKeyException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SignatureException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (DocumentException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+        add(Firmar);
     }
     
     public void Firma0(){
+        /**/
+        CrearLlaves.setBounds(300, 130, 200, 50);
+        //SelecLlavePriv.setBounds(260, 200, 280, 50);
+        Firmar.setBounds(640, 415, 140, 50);
+        KeyPrivl.setBounds(88, 210, 180, 15);
+        NameKeyPriv.setBounds(260, 200, 250, 30);
         
     }
     
     public void Firma1(){
+        /**/
+        CrearLlaves.setBounds(1000, 1000, 200, 50);
+        //SelecLlavePriv.setBounds(1000, 1000, 280, 50);
+        Firmar.setBounds(1000, 1000, 140, 50);
+        KeyPrivl.setBounds(1000, 1000, 180, 15);
+        NameKeyPriv.setBounds(1000, 1000, 250, 30);
+    }
+    
+    public void Comprobar(){
+        /*SelecFileToComp = new JButton("Seleccionar Archivo A Comprobar");
+        SelecFileToComp.setBackground(Color.decode("#161569"));
+        SelecFileToComp.setBounds(240, 200, 320, 50);
+        SelecFileToComp.setFont(new Font("Arial", Font.CENTER_BASELINE, 20));
+        SelecFileToComp.setForeground(Color.decode("#D3E7F3"));
+        SelecFileToComp.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setFileToComp();
+            }
+        });
+        add(SelecFileToComp);*/
         
+        FileCompl = new JLabel("Nombre del Archivo:");
+        //FileCompl.setBounds(100, 210, 180, 15);
+        FileCompl.setFont(new Font("Arial", Font.CENTER_BASELINE, 15));
+        FileCompl.setForeground(Color.decode("#ffffff"));
+        add(FileCompl);
+        
+        NameFileComp = new JTextField();
+        //NameFileComp.setBounds(260, 200, 250, 30);
+        NameFileComp.setFont(new Font("Arial", Font.ITALIC, 15));
+        NameFileComp.setBackground(Color.decode("#C5CAC9"));
+        add(NameFileComp);
+        
+        Comprob = new JButton("Comprobar");
+        Comprob.setBackground(Color.decode("#161569"));
+        //Comprob.setBounds(640, 415, 140, 50);
+        Comprob.setFont(new Font("Arial", Font.CENTER_BASELINE, 20));
+        Comprob.setForeground(Color.decode("#D3E7F3"));
+        Comprob.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String NameFC = NameFileComp.getText();
+                if (NameFC.isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Error, Escribe el nombre del archivo");
+                } else {
+                    PDF pdf = new PDF();
+                    try {
+                        pdf.comprobardoc(NameFC);
+                    } catch (IOException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchAlgorithmException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvalidKeySpecException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchProviderException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvalidKeyException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (SignatureException ex) {
+                        Logger.getLogger(Panel1.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+        add(Comprob);
+    }
+    
+    public void Comprobar0(){
+        //SelecFileToComp.setBounds(240, 200, 320, 50);
+        Comprob.setBounds(640, 415, 140, 50);
+        FileCompl.setBounds(88, 210, 180, 15);
+        NameFileComp.setBounds(260, 200, 250, 30);
+    }
+    
+    public void Comprobar1(){
+        //SelecFileToComp.setBounds(1000, 1000, 320, 50);
+        Comprob.setBounds(1000, 1000, 140, 50);
+        FileCompl.setBounds(1000, 1000, 180, 15);
+        NameFileComp.setBounds(1000, 1000, 250, 30);
     }
     
     private void setLlavePriv() {
         this.llavePriv = archivo();
+    }
+    
+    private void setFileToComp() {
+        this.FileToComp = archivo();
     }
     
     private File archivo() {
