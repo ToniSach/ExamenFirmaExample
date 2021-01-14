@@ -81,7 +81,7 @@ public class PDF {
         
         
         byte[] dato = "no se que poner".getBytes();
-        Path pdfPath = Paths.get("C:\\Users\\tonis\\Desktop\\SWA\\PARCIAL3\\Examen_Firma\\Archivo.pdf");
+        Path pdfPath = Paths.get("Archivo.pdf");
         byte[] pdf = Files.readAllBytes(pdfPath);
         //
         //String s = new String(pdf, StandardCharsets.UTF_8);
@@ -121,9 +121,9 @@ public class PDF {
         
         
         byte[] dato = "no se que poner".getBytes();
-        Path pdfPath = Paths.get("C:\\Users\\tonis\\Desktop\\SWA\\PARCIAL3\\Examen_Firma\\Archivo.pdf");
+        Path pdfPath = Paths.get("Archivo.pdf");
         byte[] pdf = Files.readAllBytes(pdfPath);
-        Path pdfPatha = Paths.get("C:\\Users\\tonis\\Desktop\\SWA\\PARCIAL3\\Examen_Firma\\"+ namedoc);
+        Path pdfPatha = Paths.get(""+ namedoc);
         byte[] pdfa = Files.readAllBytes(pdfPatha);
         //
         //String s = new String(pdf, StandardCharsets.UTF_8);
